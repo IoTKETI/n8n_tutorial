@@ -1,0 +1,257 @@
+{
+  "name": "3-1 abnormality detection",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const noti = $json.body[\"m2m:sgn\"].nev.rep[\"m2m:cin\"];\nconst ts   = noti.ct; // \"20250706T081940\"\nconst val  = Number(noti.con.temperature);\n\n// ISO 포맷으로 변환 (Gemini-friendly)\nconst iso = `${ts.slice(0,4)}-${ts.slice(4,6)}-${ts.slice(6,8)}T${ts.slice(9,11)}:${ts.slice(11,13)}:${ts.slice(13,15)}`;\n\n// 단일 문자열로 기록\nreturn [{ json: { chat_input: `${iso} ${val}` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        120
+      ],
+      "id": "829148f6-f4b6-4f98-b14f-0ce94d33ce25",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=sensor data: {{ $json.chat_input }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an anomaly detector.\n\nYou will receive lines in the format \"YYYY-MM-DDTHH:MM:SS <value>\" from sensors.\n\nYour memory contains the past 20 such lines. Each new user message is a new line.\n\nUse the memory to compute a mean and std-dev for the values, and compare the latest value to decide if it's an outlier (e.g., Z-score > 3).\n\nOutput strict JSON:\n{ \"anomaly\": true|false, \"reason\": \"...\", \"message\": \"...\" }\nReturn **the entire JSON above as one‐line string** (e.g., {\"anomaly\":false,…}).\n\nRespond in Korean."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        120
+      ],
+      "id": "2cf5f9fe-df07-46ad-b6bf-57681489a987",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        340
+      ],
+      "id": "672dc24e-fa3c-4c74-af0a-5be54538d6b7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1HpPOjsNLIa0SybX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "temp_data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        120
+      ],
+      "id": "46eaa168-18f1-4373-967e-775adfbcbeb8",
+      "name": "noti receiver",
+      "webhookId": "2d1b3f38-0bbc-479c-84d0-098f9bf1a463"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"anomaly\": true,\n  \"reason\": \"string\",\n  \"message\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -40,
+        340
+      ],
+      "id": "a0594049-027d-4d59-a197-d45ed8a9313e",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3a43a91e-b00f-4c28-aad2-9e7e4f041c19",
+              "leftValue": "={{ $json.output.anomaly }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        120,
+        120
+      ],
+      "id": "04d05814-663f-4492-b19e-7b9cc9956870",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "5597845206",
+        "text": "={{ $json.output.message}}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        340,
+        120
+      ],
+      "id": "3ef6e0bd-8e80-46ec-ad7c-1c41cb458aab",
+      "name": "Send a text message",
+      "webhookId": "858466c4-4b1d-431b-ba4e-5b58894f366d",
+      "credentials": {
+        "telegramApi": {
+          "id": "iPKgetwri6K0srBZ",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "sensor-temp-06",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -180,
+        340
+      ],
+      "id": "216808a3-87ad-47c8-b11f-9d90e13df264",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ccf5a179-1365-4ffd-b013-6b0c293a1e85",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8aac6b4883ab777d8d4ab4f95aa56735af35743cd865ae7cb70216d33c751baf"
+  },
+  "id": "vFIsPZSgQ486l2Jn",
+  "tags": []
+}
