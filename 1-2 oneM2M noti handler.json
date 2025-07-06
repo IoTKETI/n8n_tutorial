@@ -1,0 +1,34 @@
+{
+  "name": "1-2 oneM2M noti handler",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "onem2m-notify",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -160
+      ],
+      "id": "c94eb649-a1d8-490f-b9e0-e382b6fd639c",
+      "name": "Webhook",
+      "webhookId": "0d2e9113-4bea-4e3c-89eb-e02b8b0b241d"
+    }
+  ],
+  "pinData": {},
+  "connections": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fa253316-b3f5-4757-b584-94f62d404ab8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8aac6b4883ab777d8d4ab4f95aa56735af35743cd865ae7cb70216d33c751baf"
+  },
+  "id": "H1ACHvyWgydFGHIB",
+  "tags": []
+}

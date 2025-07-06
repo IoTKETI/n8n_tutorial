@@ -1,0 +1,110 @@
+{
+  "name": "1-1. hello oneM2M",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fb2298ac-f26d-489d-9fe2-29ddfaaf258d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "chatId": "5597845206",
+        "text": "={{ JSON.stringify($json, null, 2) }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "199438aa-bdcb-4283-93c1-7eb679218197",
+      "name": "Send a text message",
+      "webhookId": "4777355a-2532-4c6f-811d-60700713b04e",
+      "credentials": {
+        "telegramApi": {
+          "id": "iPKgetwri6K0srBZ",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:7579/Mobius",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-M2M-RI",
+              "value": "req1"
+            },
+            {
+              "name": "X-M2M-Origin",
+              "value": "CAE1"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "40c91805-037d-4cb7-9c0e-7bf944a59c70",
+      "name": "retrieve <CSEBase> resource"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "retrieve <CSEBase> resource",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retrieve <CSEBase> resource": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "18ef349e-f51d-4a89-8919-2ea6ac135b57",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8aac6b4883ab777d8d4ab4f95aa56735af35743cd865ae7cb70216d33c751baf"
+  },
+  "id": "Dbk7WKsuuOlDqUwQ",
+  "tags": []
+}

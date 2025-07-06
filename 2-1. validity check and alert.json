@@ -1,0 +1,215 @@
+{
+  "name": "2-1. validity check and alert",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c247ab2-4d98-4a6c-92bb-579e21eb89d5",
+              "name": "temperature",
+              "value": "={{ $json[\"m2m:cin\"].con.temperature }}",
+              "type": "number"
+            },
+            {
+              "id": "3d6410f0-017d-43ab-b4b6-759874dc80ce",
+              "name": "humidity",
+              "value": "={{ $json[\"m2m:cin\"].con.humidity }}",
+              "type": "number"
+            },
+            {
+              "id": "85b237de-5eb9-4f49-a44d-6436d3d62d60",
+              "name": "time",
+              "value": "={{ $json[\"m2m:cin\"].ct }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        -60
+      ],
+      "id": "54d98fa5-e2f4-4533-9fd4-c3e3a5e45d9e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:7579/Mobius/sensor1/status/la",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-M2M-RI",
+              "value": "req1234"
+            },
+            {
+              "name": "X-M2M-Origin",
+              "value": "Sponde"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "34da9307-b0f8-40ae-8d93-eeb879f8aeb1",
+      "name": "get sensor 1 status"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d252c0e4-cd6c-4c67-b36a-361fee908be9",
+              "leftValue": "={{ $json[\"m2m:cin\"].con.temperature }}",
+              "rightValue": 30,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "9978a9d6-a03c-41e9-8962-8537bf3dbfbc",
+              "leftValue": "={{ $json[\"m2m:cin\"].con.humidity }}",
+              "rightValue": 80,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "d195cdd0-75bf-47b3-83b8-b0d1716159ff",
+      "name": "check data"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c1bab61c-9aab-4501-8ad6-731db76c3173",
+      "name": "every 5 sec"
+    },
+    {
+      "parameters": {
+        "chatId": "5597845206",
+        "text": "=alert!\ncurrent time: {{ $json.time }}\ntemperature: {{ $json.temperature }} \nhumidity: {{ $json.humidity }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        860,
+        0
+      ],
+      "id": "14f2df5a-5085-4a6d-a7e9-2c528329c7cd",
+      "name": "Send telegram msg",
+      "webhookId": "d4b774d3-83c4-4ed2-a702-05f470934f80",
+      "credentials": {
+        "telegramApi": {
+          "id": "iPKgetwri6K0srBZ",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send telegram msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get sensor 1 status": {
+      "main": [
+        [
+          {
+            "node": "check data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check data": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "every 5 sec": {
+      "main": [
+        [
+          {
+            "node": "get sensor 1 status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a860a3cb-7044-47d1-9ba1-21d9ede68487",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8aac6b4883ab777d8d4ab4f95aa56735af35743cd865ae7cb70216d33c751baf"
+  },
+  "id": "u6k1dCiOQ6I087AM",
+  "tags": []
+}

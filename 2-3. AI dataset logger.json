@@ -1,0 +1,325 @@
+{
+  "name": "2-3. AI dataset logger",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        700,
+        0
+      ],
+      "id": "c1ae2e7f-0f6f-46bc-bc5a-2dff3e219636",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const time = $json.timestamp.split('.')[0];\nreturn [{\n  json: {\n    time\n  }\n}];\n  "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -180
+      ],
+      "id": "610f4888-a19e-48a1-88f5-d53ac21b6f5d",
+      "name": "get timestamp"
+    },
+    {
+      "parameters": {
+        "jsCode": "const con = $json[\"m2m:cin\"].con;\nreturn [{\n  json: {\n    temperature: con.temperature,\n    humidity: con.humidity\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "7cb16c0d-97b7-4752-b864-5cec3953678d",
+      "name": "parse sensor1 data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const con = $json[\"m2m:cin\"].con;\nreturn [{\n  json: {\n    co2: con.co2\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        180
+      ],
+      "id": "116112d2-8116-406e-aca0-6470a6107925",
+      "name": "parse sensor2 data"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:7579/Mobius/sensor1/status/la",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-M2M-RI",
+              "value": "req1"
+            },
+            {
+              "name": "X-M2M-Origin",
+              "value": "CAE1"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "14b8fc91-ca81-4e43-9a78-4510727c86a2",
+      "name": "get sensor1 data"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:7579/Mobius/sensor2/status/la",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-M2M-RI",
+              "value": "req1"
+            },
+            {
+              "name": "X-M2M-Origin",
+              "value": "CAE1"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        180
+      ],
+      "id": "3b077b0a-b010-4f39-bd95-4d92dd75e0fe",
+      "name": "get sensor2 data"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1GEdoCtOZsxgx2dp1pbPuu4ag6LoJlFmM-cw7D46N7Dw/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 765347255,
+          "mode": "list",
+          "cachedResultName": "scenario 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GEdoCtOZsxgx2dp1pbPuu4ag6LoJlFmM-cw7D46N7Dw/edit#gid=765347255"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "time": "={{ $json.time }}",
+            "temperature": "={{ $json.temperature }}",
+            "humidity": "={{ $json.humidity }}",
+            "co2": "={{ $json.co2 }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "temperature",
+              "displayName": "temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "humidity",
+              "displayName": "humidity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "co2",
+              "displayName": "co2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c210b127-49ba-4327-b76a-7ad5d4607a52",
+      "name": "Log to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        900,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LAk9jkpVetl7iXTe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a1c85ae8-e7be-4c32-b097-2a699658d5fc",
+      "name": "every 5 sec"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "get timestamp": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse sensor1 data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "parse sensor2 data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "get sensor1 data": {
+      "main": [
+        [
+          {
+            "node": "parse sensor1 data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get sensor2 data": {
+      "main": [
+        [
+          {
+            "node": "parse sensor2 data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "every 5 sec": {
+      "main": [
+        [
+          {
+            "node": "get sensor1 data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "get sensor2 data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "get timestamp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b02a9d17-1728-4273-9e70-331f91476eb9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8aac6b4883ab777d8d4ab4f95aa56735af35743cd865ae7cb70216d33c751baf"
+  },
+  "id": "TlQmwqsQBrROfBO9",
+  "tags": []
+}

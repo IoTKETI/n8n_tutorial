@@ -1,0 +1,147 @@
+{
+  "name": "2-2. google sheet data logger",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1GEdoCtOZsxgx2dp1pbPuu4ag6LoJlFmM-cw7D46N7Dw/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "scenario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GEdoCtOZsxgx2dp1pbPuu4ag6LoJlFmM-cw7D46N7Dw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "time": "={{ $json.time }}",
+            "temperature": "={{ $json.temperature }}",
+            "humidity": "={{ $json.humidity }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "temperature",
+              "displayName": "temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "humidity",
+              "displayName": "humidity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e1ad2a53-162e-4fe1-bd74-116d93e5b2c9",
+      "name": "Log to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        420,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LAk9jkpVetl7iXTe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "onem2m-notify",
+        "options": {}
+      },
+      "id": "9400238c-3589-44de-8abb-2c0aab207c22",
+      "name": "noti receiver",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        0
+      ],
+      "webhookId": "48a66ffa-4159-44b8-9ceb-b60bd8894c08"
+    },
+    {
+      "parameters": {
+        "jsCode": "const noti = $json.body[\"m2m:sgn\"].nev.rep;\nconst ct = noti[\"m2m:cin\"].ct;\nconst con = noti[\"m2m:cin\"].con;\nconst date = new Date(\n  ct.slice(0,4) + \"-\" + ct.slice(4,6) + \"-\" + ct.slice(6,8) + \"T\" +\n  ct.slice(9,11) + \":\" + ct.slice(11,13) + \":\" + ct.slice(13,15)\n);\nconst formated_ct = date.toTimeString().split(' ')[0];\n\nreturn [{\n  json: {\n    time: formated_ct,\n    temperature: con.temperature,\n    humidity: con.humidity\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        0
+      ],
+      "id": "e654b7f3-ea75-43b3-857d-15392f589fb3",
+      "name": "parse noti"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Log to Google Sheet": {
+      "main": [
+        []
+      ]
+    },
+    "noti receiver": {
+      "main": [
+        [
+          {
+            "node": "parse noti",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse noti": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8482f79f-525d-4df1-87f0-1a8691119fec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8aac6b4883ab777d8d4ab4f95aa56735af35743cd865ae7cb70216d33c751baf"
+  },
+  "id": "L6kkDOfN34wkpe62",
+  "tags": []
+}
