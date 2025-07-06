@@ -8,8 +8,8 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        660,
-        -100
+        680,
+        -20
       ],
       "id": "3f4406ff-29a0-4179-b03c-494fab226453",
       "name": "Wait",
@@ -24,8 +24,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -20,
-        0
+        60,
+        -20
       ],
       "id": "d5e3a16b-7a58-496d-b4ed-13a5b1cfc71c",
       "name": "noti receiver",
@@ -67,8 +67,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        220,
-        0
+        240,
+        -20
       ],
       "id": "d8d9d2a4-d727-4c28-a724-4d09d35ccc2d",
       "name": "if conditions meet"
@@ -76,7 +76,7 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "{\n    \"to\": \"Mobius/airconditioner1/control\",\n    \"fr\": \"CAE1\",\n    \"rqi\": \"1234\",\n    \"rvi\": \"2a\",\n    \"op\": 1,\n    \"ty\": 4,\n    \"pc\": \n    {\n      \"m2m:cin\": {\n        \"rn\": \"cin-0001\",\n        \"con\": {\n        \t\"power\": \"on\",\n        \t\"mode\": \"cooling\",\n        \t\"setTemperature\": 20\n        }\n      }\n    }\n}",
+        "jsonOutput": "{\n    \"to\": \"Mobius/airconditioner1/control\",\n    \"fr\": \"CAE1\",\n    \"rqi\": \"1234\",\n    \"rvi\": \"2a\",\n    \"op\": 1,\n    \"ty\": 4,\n    \"pc\": \n    {\n      \"m2m:cin\": {\n        \"rn\": \"cin-0001\",\n        \"con\": {\n        \t\"power\": \"on\",\n        \t\"mode\": \"cooling\",\n        \t\"setTemperature\": 21\n        }\n      }\n    }\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.set",
@@ -87,6 +87,28 @@
       ],
       "id": "db78b911-6fd9-4fbe-a964-321173e51e08",
       "name": "prepare control msg"
+    },
+    {
+      "parameters": {
+        "chatId": "5597845206",
+        "text": "=now the aircon is {{ $json[\"m2m:cin\"].con.power }}!\ncurrent temperature is now {{ $json[\"m2m:cin\"].con.temperature }}.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -20
+      ],
+      "id": "d2f9e11d-1adc-4a21-9635-b3ee2c1bb7a1",
+      "name": "Send aircon status over telegram",
+      "webhookId": "f542f0a5-b25b-46f5-85ff-cebeed4774c0",
+      "credentials": {
+        "telegramApi": {
+          "id": "iPKgetwri6K0srBZ",
+          "name": "Telegram account"
+        }
+      }
     },
     {
       "parameters": {
@@ -113,31 +135,29 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        660,
-        100
+        860,
+        -20
       ],
       "id": "8b0b47c8-56cc-4418-a0a4-f72224ec0793",
       "name": "get aircon status"
     },
     {
       "parameters": {
-        "chatId": "5597845206",
-        "text": "=now the aircon is {{ $json[\"m2m:cin\"].con.power }}!\ncurrent temperature is now {{ $json[\"m2m:cin\"].con.temperature }}.",
-        "additionalFields": {}
+        "topic": "/oneM2M/req/SAE1/Mobius2/json",
+        "options": {}
       },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
+      "type": "n8n-nodes-base.mqtt",
+      "typeVersion": 1,
       "position": [
-        880,
-        100
+        680,
+        -160
       ],
-      "id": "d2f9e11d-1adc-4a21-9635-b3ee2c1bb7a1",
-      "name": "Send aircon status over telegram",
-      "webhookId": "f542f0a5-b25b-46f5-85ff-cebeed4774c0",
+      "id": "9bc74cc3-b53e-4316-bae7-76c108ab5620",
+      "name": "send control msg",
       "credentials": {
-        "telegramApi": {
-          "id": "iPKgetwri6K0srBZ",
-          "name": "Telegram account"
+        "mqtt": {
+          "id": "RnXusSg65MPVKOJF",
+          "name": "MQTT account"
         }
       }
     }
@@ -184,6 +204,11 @@
             "node": "Wait",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "send control msg",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -204,7 +229,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "ecc51007-cbfd-40f8-a20c-4ecc33a3a06a",
+  "versionId": "b3a4d108-3c31-481b-abdf-5888a27d7bde",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8aac6b4883ab777d8d4ab4f95aa56735af35743cd865ae7cb70216d33c751baf"
