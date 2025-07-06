@@ -1,0 +1,125 @@
+[
+    {
+        "id": "9970fff1ae2fcd78",
+        "type": "tab",
+        "label": "n8n_airconditioner",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c6a8c70cc0e1cb43",
+        "type": "http in",
+        "z": "9970fff1ae2fcd78",
+        "name": "",
+        "url": "/airconditioner1",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 220,
+        "wires": [
+            [
+                "678c428957cf1b9b",
+                "c4df56dffb7cbd17"
+            ]
+        ]
+    },
+    {
+        "id": "678c428957cf1b9b",
+        "type": "function",
+        "z": "9970fff1ae2fcd78",
+        "name": "set req",
+        "func": "msg.headers = {\n    \"x-m2m-ri\": \"req1234\",\n    \"x-m2m-origin\": \"SAE1\",\n    \"content-type\": \"application/json; ty=4\"\n};\n\nconst control_msg = msg.payload[\"m2m:sgn\"].nev.rep[\"m2m:cin\"].con;\n\nif (control_msg.power == \"on\" && control_msg.mode == \"cooling\") {  \n  msg.payload = {\n        \"m2m:cin\": {\n          \"con\": {\n            \"power\": \"on\",\n            \"mode\": \"cooling\",\n            \"temperature\": 28.2,\n            \"humidity\": 80\n          }\n        }\n  };\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 220,
+        "wires": [
+            [
+                "4546a16e061834d8"
+            ]
+        ]
+    },
+    {
+        "id": "c4df56dffb7cbd17",
+        "type": "http response",
+        "z": "9970fff1ae2fcd78",
+        "name": "noti resp",
+        "statusCode": "200",
+        "headers": {},
+        "x": 420,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "3e837a1dce0e84fc",
+        "type": "http request",
+        "z": "9970fff1ae2fcd78",
+        "name": "update current status",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:7579/Mobius/airconditioner1/status",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 680,
+        "y": 280,
+        "wires": [
+            [
+                "502f234c17ba0e63"
+            ]
+        ]
+    },
+    {
+        "id": "502f234c17ba0e63",
+        "type": "debug",
+        "z": "9970fff1ae2fcd78",
+        "name": "new <cin> resource",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 750,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "4546a16e061834d8",
+        "type": "delay",
+        "z": "9970fff1ae2fcd78",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 580,
+        "y": 220,
+        "wires": [
+            [
+                "3e837a1dce0e84fc"
+            ]
+        ]
+    }
+]
